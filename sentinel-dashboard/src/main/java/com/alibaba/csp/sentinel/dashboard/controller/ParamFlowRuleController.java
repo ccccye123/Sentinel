@@ -28,6 +28,8 @@ import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
+import com.alibaba.csp.sentinel.dashboard.rule.nacos.provider.ParamFlowRuleNacosProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.nacos.publisher.ParamFlowRuleNacosPublisher;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.SentinelVersion;
@@ -66,6 +68,11 @@ public class ParamFlowRuleController {
     @Autowired
     private RuleRepository<ParamFlowRuleEntity, Long> repository;
 
+    @Autowired
+    private ParamFlowRuleNacosProvider paramFlowRuleNacosProvider;
+    @Autowired
+    private ParamFlowRuleNacosPublisher paramFlowRuleNacosPublisher;
+
     private boolean checkIfSupported(String app, String ip, int port) {
         try {
             return Optional.ofNullable(appManagement.getDetailApp(app))
@@ -97,10 +104,12 @@ public class ParamFlowRuleController {
             return unsupportedVersion();
         }
         try {
-            return sentinelApiClient.fetchParamFlowRulesOfMachine(app, ip, port)
-                .thenApply(repository::saveAll)
-                .thenApply(Result::ofSuccess)
-                .get();
+//            return sentinelApiClient.fetchParamFlowRulesOfMachine(app, ip, port)
+//                .thenApply(repository::saveAll)
+//                .thenApply(Result::ofSuccess)
+//                .get();
+            // 支持Nacos
+            return Result.ofSuccess(paramFlowRuleNacosProvider.getRules(app));
         } catch (ExecutionException ex) {
             logger.error("Error when querying parameter flow rules", ex.getCause());
             if (isNotSupported(ex.getCause())) {
@@ -257,7 +266,16 @@ public class ParamFlowRuleController {
 
     private CompletableFuture<Void> publishRules(String app, String ip, Integer port) {
         List<ParamFlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setParamFlowRuleOfMachine(app, ip, port, rules);
+//        return sentinelApiClient.setParamFlowRuleOfMachine(app, ip, port, rules);
+
+        return CompletableFuture.runAsync(()->{
+            try {
+                // 支持Nacos
+                paramFlowRuleNacosPublisher.publish(app, rules);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private <R> Result<R> unsupportedVersion() {

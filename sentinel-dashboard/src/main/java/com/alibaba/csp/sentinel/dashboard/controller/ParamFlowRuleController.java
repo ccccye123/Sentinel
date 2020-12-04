@@ -28,8 +28,8 @@ import com.alibaba.csp.sentinel.dashboard.discovery.AppManagement;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
-import com.alibaba.csp.sentinel.dashboard.rule.nacos.provider.ParamFlowRuleNacosProvider;
-import com.alibaba.csp.sentinel.dashboard.rule.nacos.publisher.ParamFlowRuleNacosPublisher;
+import com.alibaba.csp.sentinel.dashboard.rule.provider.ParamFlowRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.publisher.ParamFlowRulePublisher;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.SentinelVersion;
@@ -69,9 +69,9 @@ public class ParamFlowRuleController {
     private RuleRepository<ParamFlowRuleEntity, Long> repository;
 
     @Autowired
-    private ParamFlowRuleNacosProvider paramFlowRuleNacosProvider;
+    private ParamFlowRuleProvider paramFlowRuleProvider;
     @Autowired
-    private ParamFlowRuleNacosPublisher paramFlowRuleNacosPublisher;
+    private ParamFlowRulePublisher paramFlowRulePublisher;
 
     private boolean checkIfSupported(String app, String ip, int port) {
         try {
@@ -108,8 +108,8 @@ public class ParamFlowRuleController {
 //                .thenApply(repository::saveAll)
 //                .thenApply(Result::ofSuccess)
 //                .get();
-            // 支持Nacos
-            return Result.ofSuccess(paramFlowRuleNacosProvider.getRules(app));
+            // 支持动态规则
+            return Result.ofSuccess(paramFlowRuleProvider.getRules(app));
         } catch (ExecutionException ex) {
             logger.error("Error when querying parameter flow rules", ex.getCause());
             if (isNotSupported(ex.getCause())) {
@@ -270,8 +270,8 @@ public class ParamFlowRuleController {
 
         return CompletableFuture.runAsync(()->{
             try {
-                // 支持Nacos
-                paramFlowRuleNacosPublisher.publish(app, rules);
+                // 支持动态规则
+                paramFlowRulePublisher.publish(app, rules);
             } catch (Exception e) {
                 e.printStackTrace();
             }

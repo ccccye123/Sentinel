@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.nacos.publisher;
+package com.alibaba.csp.sentinel.dashboard.rule.publisher;
 
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.rule.nacos.NacosConfigUtil;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.rule.RuleConfigUtil;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,19 +27,19 @@ import java.util.List;
 /**
  * @author chenfu
  */
-@Component("authorityRuleNacosPublisher")
-public class AuthorityRuleNacosPublisher extends AbstractRuleNacosPublicsher<AuthorityRuleEntity> implements InitializingBean {
+@Component("flowRulePublisher")
+public class FlowRulePublisher extends AbstractRulePublisher<FlowRuleEntity> implements InitializingBean {
 
     @Autowired
-    private Converter<List<AuthorityRuleEntity>, String> ruleEntityEncoder;
+    private Converter<List<FlowRuleEntity>, String> flowRuleEntityEncoder;
 
     @Override
     protected String getDataId(String app) {
-        return app + NacosConfigUtil.AUTHORITY_DATA_ID_POSTFIX;
+        return app + RuleConfigUtil.FLOW_DATA_ID_POSTFIX;
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        setRuleEntityEncoder(ruleEntityEncoder);
+        setRuleEntityEncoder(flowRuleEntityEncoder);
     }
 }

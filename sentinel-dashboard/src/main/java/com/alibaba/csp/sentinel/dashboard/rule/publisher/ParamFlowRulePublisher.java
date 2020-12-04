@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.nacos.publisher;
+package com.alibaba.csp.sentinel.dashboard.rule.publisher;
 
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.rule.nacos.NacosConfigUtil;
+import com.alibaba.csp.sentinel.dashboard.rule.RuleConfigUtil;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,15 +27,15 @@ import java.util.List;
 /**
  * @author chenfu
  */
-@Component("paramFlowRuleNacosPublisher")
-public class ParamFlowRuleNacosPublisher extends AbstractRuleNacosPublicsher<ParamFlowRuleEntity> implements InitializingBean {
+@Component("paramFlowRulePublisher")
+public class ParamFlowRulePublisher extends AbstractRulePublisher<ParamFlowRuleEntity> implements InitializingBean {
 
     @Autowired
     private Converter<List<ParamFlowRuleEntity>, String> ruleEntityEncoder;
 
     @Override
     protected String getDataId(String app) {
-        return app + NacosConfigUtil.PARAM_FLOW_DATA_ID_POSTFIX;
+        return app + RuleConfigUtil.PARAM_FLOW_DATA_ID_POSTFIX;
     }
 
     @Override

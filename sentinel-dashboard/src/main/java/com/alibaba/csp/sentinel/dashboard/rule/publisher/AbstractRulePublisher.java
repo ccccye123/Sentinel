@@ -13,37 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.nacos.publisher;
+package com.alibaba.csp.sentinel.dashboard.rule.publisher;
 
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
-import com.alibaba.csp.sentinel.dashboard.rule.nacos.NacosConfigUtil;
+import com.alibaba.csp.sentinel.dashboard.rule.ext.IDataSourceExt;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.util.AssertUtil;
-import com.alibaba.nacos.api.config.ConfigService;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
- * @author Eric Zhao
- * @since 1.4.0
+ * @author chenfu
  */
-@Component("flowRuleNacosPublisher")
-public class FlowRuleNacosPublisher extends AbstractRuleNacosPublicsher<FlowRuleEntity> implements InitializingBean {
+public abstract class AbstractRulePublisher<T> implements DynamicRulePublisher<List<T>> {
 
     @Autowired
-    private Converter<List<FlowRuleEntity>, String> flowRuleEntityEncoder;
+    private IDataSourceExt ruleDataSourceExt;
+
+    private Converter<List<T>, String> ruleEntityEncoder;
 
     @Override
-    protected String getDataId(String app) {
-        return app + NacosConfigUtil.FLOW_DATA_ID_POSTFIX;
+    public void publish(String app, List<T> rules) throws Exception {
+        String dataId = getDataId(app);
+        AssertUtil.notEmpty(app, "app name cannot be empty");
+        String convert = ruleEntityEncoder.convert(rules);
+        if (rules == null){
+            return;
+        }
+
+        ruleDataSourceExt.set(dataId, convert);
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        setRuleEntityEncoder(flowRuleEntityEncoder);
+    public void setRuleEntityEncoder(Converter<List<T>, String> ruleEntityEncoder) {
+        this.ruleEntityEncoder = ruleEntityEncoder;
     }
+
+    protected abstract String getDataId(String app);
 }

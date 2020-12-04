@@ -21,8 +21,8 @@ import java.util.List;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
-import com.alibaba.csp.sentinel.dashboard.rule.nacos.provider.SystemRuleNacosProvider;
-import com.alibaba.csp.sentinel.dashboard.rule.nacos.publisher.SystemRuleNacosPublisher;
+import com.alibaba.csp.sentinel.dashboard.rule.provider.SystemRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.publisher.SystemRulePublisher;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.SystemRuleEntity;
@@ -52,9 +52,9 @@ public class SystemController {
     private SentinelApiClient sentinelApiClient;
 
     @Autowired
-    private SystemRuleNacosProvider systemRuleNacosProvider;
+    private SystemRuleProvider systemRuleProvider;
     @Autowired
-    private SystemRuleNacosPublisher systemRuleNacosPublisher;
+    private SystemRulePublisher systemRulePublisher;
 
     private <R> Result<R> checkBasicParams(String app, String ip, Integer port) {
         if (StringUtil.isEmpty(app)) {
@@ -83,8 +83,8 @@ public class SystemController {
         try {
 //            List<SystemRuleEntity> rules = sentinelApiClient.fetchSystemRuleOfMachine(app, ip, port);
 
-            // 支持Nacos
-            List<SystemRuleEntity> rules = systemRuleNacosProvider.getRules(app);
+            // 支持动态规则
+            List<SystemRuleEntity> rules = systemRuleProvider.getRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -257,7 +257,8 @@ public class SystemController {
         List<SystemRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
 //        return sentinelApiClient.setSystemRuleOfMachine(app, ip, port, rules);
         try {
-            systemRuleNacosPublisher.publish(app,rules);
+            // 支持动态规则
+            systemRulePublisher.publish(app,rules);
             return true;
         } catch (Exception e) {
             return false;

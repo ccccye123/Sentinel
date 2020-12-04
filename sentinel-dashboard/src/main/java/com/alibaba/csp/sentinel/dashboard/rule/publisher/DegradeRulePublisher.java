@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.nacos.publisher;
+package com.alibaba.csp.sentinel.dashboard.rule.publisher;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.rule.nacos.NacosConfigUtil;
+import com.alibaba.csp.sentinel.dashboard.rule.RuleConfigUtil;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,15 +27,15 @@ import java.util.List;
 /**
  * @author chenfu
  */
-@Component("degradeRuleNacosPublisher")
-public class DegradeRuleNacosPublisher extends AbstractRuleNacosPublicsher<DegradeRuleEntity> implements InitializingBean {
+@Component("degradeRulePublisher")
+public class DegradeRulePublisher extends AbstractRulePublisher<DegradeRuleEntity> implements InitializingBean {
 
     @Autowired
     private Converter<List<DegradeRuleEntity>, String> ruleEntityEncoder;
 
     @Override
     protected String getDataId(String app) {
-        return app + NacosConfigUtil.DEGRADE_DATA_ID_POSTFIX;
+        return app + RuleConfigUtil.DEGRADE_DATA_ID_POSTFIX;
     }
 
     @Override

@@ -22,8 +22,8 @@ import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
-import com.alibaba.csp.sentinel.dashboard.rule.nacos.provider.AuthorityRuleNacosProvider;
-import com.alibaba.csp.sentinel.dashboard.rule.nacos.publisher.AuthorityRuleNacosPublisher;
+import com.alibaba.csp.sentinel.dashboard.rule.provider.AuthorityRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.publisher.AuthorityRulePublisher;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.util.StringUtil;
 
@@ -60,9 +60,9 @@ public class AuthorityRuleController {
     private RuleRepository<AuthorityRuleEntity, Long> repository;
 
     @Autowired
-    private AuthorityRuleNacosProvider authorityRuleNacosProvider;
+    private AuthorityRuleProvider authorityRuleProvider;
     @Autowired
-    private AuthorityRuleNacosPublisher authorityRuleNacosPublisher;
+    private AuthorityRulePublisher authorityRulePublisher;
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
@@ -80,8 +80,8 @@ public class AuthorityRuleController {
         }
         try {
 //            List<AuthorityRuleEntity> rules = sentinelApiClient.fetchAuthorityRulesOfMachine(app, ip, port);
-            // 支持Nacos
-            List<AuthorityRuleEntity> rules = authorityRuleNacosProvider.getRules(app);
+            // 支持动态规则
+            List<AuthorityRuleEntity> rules = authorityRuleProvider.getRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -197,8 +197,8 @@ public class AuthorityRuleController {
         List<AuthorityRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
 //        return sentinelApiClient.setAuthorityRuleOfMachine(app, ip, port, rules);
         try {
-            // 支持Nacos·
-            authorityRuleNacosPublisher.publish(app,rules);
+            // 支持动态规则
+            authorityRulePublisher.publish(app,rules);
             return true;
         } catch (Exception e) {
             return false;

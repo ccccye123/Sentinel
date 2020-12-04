@@ -23,8 +23,8 @@ import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
-import com.alibaba.csp.sentinel.dashboard.rule.nacos.provider.DegradeRuleNacosProvider;
-import com.alibaba.csp.sentinel.dashboard.rule.nacos.publisher.DegradeRuleNacosPublisher;
+import com.alibaba.csp.sentinel.dashboard.rule.provider.DegradeRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.publisher.DegradeRulePublisher;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreakerStrategy;
 import com.alibaba.csp.sentinel.util.StringUtil;
@@ -62,9 +62,9 @@ public class DegradeController {
     private SentinelApiClient sentinelApiClient;
 
     @Autowired
-    private DegradeRuleNacosProvider degradeRuleNacosProvider;
+    private DegradeRuleProvider degradeRuleProvider;
     @Autowired
-    private DegradeRuleNacosPublisher degradeRuleNacosPublisher;
+    private DegradeRulePublisher degradeRulePublisher;
 
     @GetMapping("/rules.json")
     @AuthAction(PrivilegeType.READ_RULE)
@@ -81,8 +81,8 @@ public class DegradeController {
         try {
 //            List<DegradeRuleEntity> rules = sentinelApiClient.fetchDegradeRuleOfMachine(app, ip, port);
 
-            // 对Nacos的支持
-            List<DegradeRuleEntity> rules = degradeRuleNacosProvider.getRules(app);
+            // 支持动态规则
+            List<DegradeRuleEntity> rules = degradeRuleProvider.getRules(app);
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -176,8 +176,8 @@ public class DegradeController {
 //        return sentinelApiClient.setDegradeRuleOfMachine(app, ip, port, rules);
 
         try {
-            // 将规则推送和到Nacos
-            degradeRuleNacosPublisher.publish(app, rules);
+            // 支持动态规则
+            degradeRulePublisher.publish(app, rules);
             return true;
         } catch (Exception e) {
             return false;

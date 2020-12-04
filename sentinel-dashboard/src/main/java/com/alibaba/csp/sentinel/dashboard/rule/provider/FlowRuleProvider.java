@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.nacos.provider;
+package com.alibaba.csp.sentinel.dashboard.rule.provider;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
-import com.alibaba.csp.sentinel.dashboard.rule.nacos.NacosConfigUtil;
+import com.alibaba.csp.sentinel.dashboard.rule.RuleConfigUtil;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,19 +28,19 @@ import java.util.List;
 /**
  * @author chenfu
  */
-@Component("flowRuleNacosProvider")
-public class FlowRuleNacosProvider extends AbstractRuleNacosProvider<FlowRuleEntity> implements InitializingBean {
+@Component("flowRuleProvider")
+public class FlowRuleProvider extends AbstractRuleProvider<FlowRuleEntity> implements InitializingBean {
 
     @Autowired
-    private Converter<String, List<FlowRuleEntity>> flowRuleEntityDecoder;
+    private Converter<String, List<FlowRuleEntity>> ruleEntityDecoder;
 
     @Override
     protected String getDataId(String appName) {
-        return appName + NacosConfigUtil.FLOW_DATA_ID_POSTFIX;
+        return appName + RuleConfigUtil.FLOW_DATA_ID_POSTFIX;
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        setRuleEntityDecoder(flowRuleEntityDecoder);
+        setRuleEntityDecoder(ruleEntityDecoder);
     }
 }
